@@ -15,8 +15,13 @@ struct Triangle
     w::Vertex
 end
 
-function load(stlpath::AbstractString)
-    open(stlpath) do stl
+"""
+    load(path::AbstractString)
+
+Load STL file to list of triangles.
+"""
+function load(path::AbstractString)
+    open(path) do stl
         skip(stl, 80)  # skip header
         trianglecount = read(stl, UInt32)
         ref = Ref{Triangle}()
