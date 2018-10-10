@@ -2,5 +2,6 @@ using Test
 import Slicer
 
 const STL = joinpath("data", "nist.stl")
+triangles = Slicer.load(STL)
 
-@test length(Slicer.load(STL)) == 7392
+@test length(triangles) == 7392

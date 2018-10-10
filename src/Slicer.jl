@@ -1,15 +1,10 @@
 module Slicer
 
-struct Vertex
-    x::Float32
-    y::Float32
-    z::Float32
-end
-
-const Vector = Vertex
+const Vertex = Tuple{Float32, Float32, Float32}
+const Normal = Tuple{Float32, Float32, Float32}
 
 struct Triangle
-    normal::Vector
+    normal::Normal
     u::Vertex
     v::Vertex
     w::Vertex
