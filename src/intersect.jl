@@ -1,19 +1,15 @@
 import LinearAlgebra: dot
 
 function intersect(triangles::Vector{Triangle}, plane::Plane)
-    union(map(t -> intersect(t, plane), triangles)...)
+    filter(l -> l !== nothing, map(t -> intersect(t, plane), triangles))
 end
 
-function intersect(triangle::Triangle, plane::Plane)
+function intersect(triangle::Triangle, plane::Plane)::Union{LineSegment, Nothing}
     intersections = Set(union(intersect(triangle.a, triangle.b, plane),
                               intersect(triangle.b, triangle.c, plane),
                               intersect(triangle.c, triangle.a, plane)))
 
-    if length(intersections) == 2
-        return [LineSegment(intersections...)]
-    end
-
-    return []
+    length(intersections) == 2 ? LineSegment(intersections...) : nothing
 end
 
 """
