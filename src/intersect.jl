@@ -5,9 +5,15 @@ function intersect(triangles::Vector{Triangle}, plane::Plane)
 end
 
 function intersect(triangle::Triangle, plane::Plane)
-    union(intersect(triangle.a, triangle.b, plane),
-          intersect(triangle.b, triangle.c, plane),
-          intersect(triangle.c, triangle.a, plane))
+    intersections = Set(union(intersect(triangle.a, triangle.b, plane),
+                              intersect(triangle.b, triangle.c, plane),
+                              intersect(triangle.c, triangle.a, plane)))
+
+    if length(intersections) == 2
+        return [LineSegment(intersections...)]
+    end
+
+    return []
 end
 
 """
@@ -17,10 +23,14 @@ Intersect line segment and plane. Two intersections are returned when line
 segment is contained in plane.
 """
 function intersect(a::Vertex, b::Vertex, plane::Plane)
-    intersections = Set{Vertex}()
-
+    intersections = []
+    
     adistance = distance(a, plane)
     bdistance = distance(b, plane)
+
+    if adistance * bdistance > eps(Float32)
+        return intersections
+    end
 
     ainplane = isapprox(adistance, 0)
     binplane = isapprox(bdistance, 0)
@@ -28,10 +38,10 @@ function intersect(a::Vertex, b::Vertex, plane::Plane)
     if ainplane push!(intersections, a) end
     if binplane push!(intersections, b) end
 
-    if ainplane || binplane || adistance * bdistance > eps(Float32)
+    if ainplane || binplane
         return intersections
     end
-
+    
     t = adistance / (adistance - bdistance)
     push!(intersections, a + t * (b - a))
 end

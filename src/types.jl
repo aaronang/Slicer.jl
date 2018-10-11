@@ -23,3 +23,8 @@ struct AABB
     zmin::Float32
     zmax::Float32
 end
+
+struct LineSegment
+    a::Vertex
+    b::Vertex
+end
