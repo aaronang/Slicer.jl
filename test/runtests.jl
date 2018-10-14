@@ -1,6 +1,6 @@
 using Test
 import Slicer
-import Slicer: Plane, Vertex, Triangle, AABB, LineSegment
+import Slicer: Plane, Vertex, Triangle, AABB, LineSegment, Polygon
 
 @testset "Load STL" begin
     stl = joinpath("data", "nist.stl")
@@ -63,3 +63,33 @@ end
     @test Slicer.boundingbox([triangle1, triangle2]) == AABB(0, 0, 0, 1, -.5, 1)
 end
 
+@testset "Contour construction" begin
+    @test Slicer.construct([
+        LineSegment((0, 0, 0), (1, 0, 0)),
+        LineSegment((1, 0, 0), (0, 1, 0)),
+        LineSegment((0, 1, 0), (0, 0, 0)),
+    ]) == [
+        Polygon([(0, 0, 0), (0, 1, 0), (1, 0, 0)])
+    ]
+
+    @test Slicer.construct([
+        LineSegment((0, 0, 0), (1, 0, 0)),
+        LineSegment((1, 0, 0), (0, 1, 0)),
+        LineSegment((0, 1, 0), (0, 0, 0)),
+        LineSegment((0, 0, 1), (1, 0, 1)),
+        LineSegment((1, 0, 1), (0, 1, 1)),
+        LineSegment((0, 1, 1), (0, 0, 1)),
+    ]) == [
+        Polygon([(0, 0, 0), (0, 1, 0), (1, 0, 0)]),
+        Polygon([(1, 0, 1), (0, 1, 1), (0, 0, 1)]),
+    ]
+
+    @test Slicer.construct([
+        LineSegment((0, 0, 0), (1, 0, 0)),
+        LineSegment((1, 0, 0), (1, 1, 0)),
+        LineSegment((1, 1, 0), (0, 1, 0)),
+        LineSegment((0, 1, 0), (0, 0, 0)),
+    ]) == [
+        Polygon([(1, 1, 0), (0, 1, 0), (0, 0, 0), (1, 0, 0)]),
+    ]
+end

@@ -28,3 +28,5 @@ struct LineSegment
     a::Vertex
     b::Vertex
 end
+
+const Polygon = Vector{Vertex}
