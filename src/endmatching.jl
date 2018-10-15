@@ -32,3 +32,16 @@ function match(segments::Vector{LineSegment})::Vector{Polygon}
 
     return polygons
 end
+
+function correct!(polygons::Vector{Polygon})
+    boxes = map(boundingbox, polygons)
+    for (index, box) in enumerate(boxes)
+        num_enclosing = sum(map(other -> issubset(box, other) ? 1 : 0, boxes))
+        if iseven(num_enclosing)
+            isclockwise(polygons[index]) && reverse!(polygons[index])
+        else
+            !isclockwise(polygons[index]) && reverse!(polygons[index])
+        end
+    end
+    nothing
+end
