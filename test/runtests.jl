@@ -100,3 +100,8 @@ end
         Polygon([(1, 1, 0), (0, 1, 0), (0, 0, 0), (1, 0, 0)]),
     ]
 end
+
+@testset "Clockwise vs. counter-clockwise" begin
+    @test Slicer.isclockwise(Polygon([(0, 0, 0), (0, 1, 0), (1, 1, 0), (1, 0, 0)]))
+    @test !Slicer.isclockwise(Polygon([(0, 0, 0), (1, 0, 0), (1, 1, 0), (0, 1, 0)]))
+end
