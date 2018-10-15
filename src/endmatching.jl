@@ -1,6 +1,6 @@
 import DataStructures: DefaultDict, OrderedSet
 
-function construct(segments::Vector{LineSegment})
+function match(segments::Vector{LineSegment})::Vector{Polygon}
     cache = DefaultDict{Vertex, Vector{Vertex}}(Vector{Vertex})
     for segment in segments
         push!(cache[segment.a], segment.b)

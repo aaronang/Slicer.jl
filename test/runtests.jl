@@ -63,8 +63,8 @@ end
     @test Slicer.boundingbox([triangle1, triangle2]) == AABB(0, 0, 0, 1, -.5, 1)
 end
 
-@testset "Contour construction" begin
-    @test Slicer.construct([
+@testset "End matching" begin
+    @test Slicer.match([
         LineSegment((0, 0, 0), (1, 0, 0)),
         LineSegment((1, 0, 0), (0, 1, 0)),
         LineSegment((0, 1, 0), (0, 0, 0)),
@@ -72,7 +72,7 @@ end
         Polygon([(0, 0, 0), (0, 1, 0), (1, 0, 0)])
     ]
 
-    @test Slicer.construct([
+    @test Slicer.match([
         LineSegment((0, 0, 0), (1, 0, 0)),
         LineSegment((1, 0, 0), (0, 1, 0)),
         LineSegment((0, 1, 0), (0, 0, 0)),
@@ -84,7 +84,7 @@ end
         Polygon([(1, 0, 1), (0, 1, 1), (0, 0, 1)]),
     ]
 
-    @test Slicer.construct([
+    @test Slicer.match([
         LineSegment((0, 0, 0), (1, 0, 0)),
         LineSegment((1, 0, 0), (1, 1, 0)),
         LineSegment((1, 1, 0), (0, 1, 0)),

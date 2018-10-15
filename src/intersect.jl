@@ -1,6 +1,6 @@
 import LinearAlgebra: dot
 
-function intersect(triangles::Vector{Triangle}, plane::Plane)
+function intersect(triangles::Vector{Triangle}, plane::Plane)::Vector{LineSegment}
     filter(l -> l !== nothing, map(t -> intersect(t, plane), triangles))
 end
 
@@ -20,7 +20,7 @@ segment is contained in plane.
 """
 function intersect(a::Vertex, b::Vertex, plane::Plane)
     intersections = []
-    
+
     adistance = distance(a, plane)
     bdistance = distance(b, plane)
 
@@ -37,7 +37,7 @@ function intersect(a::Vertex, b::Vertex, plane::Plane)
     if ainplane || binplane
         return intersections
     end
-    
+
     t = adistance / (adistance - bdistance)
     push!(intersections, a + t * (b - a))
 end
