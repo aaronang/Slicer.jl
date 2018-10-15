@@ -61,6 +61,13 @@ end
     @test Slicer.boundingbox(Triangle((1, 0, 0), (0, 0, 0), (0, 1, 0), (0, 0, 1))) == AABB(0, 0, 0, 1, 0, 1)
     @test AABB(0, 0, 0, 1, 0, 42) + AABB(-1, 1, 0, .5, -.5, 1) == AABB(-1, 1, 0, 1, -.5, 42)
     @test Slicer.boundingbox([triangle1, triangle2]) == AABB(0, 0, 0, 1, -.5, 1)
+
+    @test Slicer.boundingbox(Polygon([(1, 0, 1), (0, 1, 1), (0, 0, 1)])) == AABB(0, 1, 0, 1, 1, 1)
+
+    @test issubset(AABB(0, 1, 0, 1, 0, 0), AABB(0, 1, 0, 1, 0, 0))
+    @test issubset(AABB(0, .5, 0, .5, 0, 0), AABB(0, 1, 0, 1, 0, 0))
+    @test issubset(AABB(.1, .5, 0, .5, 0, 0), AABB(0, 1, 0, 1, 0, 0))
+    @test !issubset(AABB(-.1, .5, 0, .5, 0, 0), AABB(0, 1, 0, 1, 0, 0))
 end
 
 @testset "End matching" begin

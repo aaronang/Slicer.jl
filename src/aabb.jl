@@ -1,10 +1,10 @@
 """
-    boundingbox(triangles::Vector{Triangle})
+    boundingbox(polygon)
 
-Compute axis-aligned bounding box for tesselated model.
+Compute axis-aligned bounding box for polygon.
 """
-function boundingbox(triangles::Vector{Triangle})
-    sum(map(boundingbox, triangles))
+function boundingbox(polygon)
+    sum(map(boundingbox, polygon))
 end
 
 function boundingbox(triangle::Triangle)
@@ -19,6 +19,17 @@ function boundingbox(triangle::Triangle)
     )
 end
 
+function boundingbox(vertex::Vertex)
+    AABB(
+        vertex[1],  # xmin
+        vertex[1],  # xmax
+        vertex[2],  # ymin
+        vertex[2],  # ymax
+        vertex[3],  # zmin
+        vertex[3],  # zmax
+    )
+end
+
 function Base.:+(a::AABB, b::AABB)
     AABB(
         min(a.xmin, b.xmin),
@@ -28,4 +39,13 @@ function Base.:+(a::AABB, b::AABB)
         min(a.zmin, b.zmin),
         max(a.zmax, b.zmax),
     )
+end
+
+function Base.issubset(a::AABB, b::AABB)
+    a.xmin >= b.xmin &&
+    a.xmax <= b.xmax &&
+    a.ymin >= b.ymin &&
+    a.ymax <= b.ymax &&
+    a.zmin >= b.zmin &&
+    a.zmax <= b.zmax
 end
