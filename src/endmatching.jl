@@ -1,4 +1,5 @@
 import DataStructures: DefaultDict, OrderedSet
+import LinearAlgebra: cross, norm
 
 function match(segments::Vector{LineSegment})::Vector{Polygon}
     cache = DefaultDict{Vertex, Vector{Vertex}}(Vector{Vertex})
@@ -31,6 +32,16 @@ function match(segments::Vector{LineSegment})::Vector{Polygon}
     end
 
     return polygons
+end
+
+function simplify(polygon::Polygon)::Polygon
+    println(edges(polygon))
+    println(edges(collect(edges(polygon))))
+    [b for ((a, b), (c, d)) in edges(collect(edges(polygon))) if !iscollinear(b - a, d - c)]
+end
+
+function iscollinear(a::Vertex, b::Vertex)
+    isapprox(norm(cross(a, b)), 0)
 end
 
 function correct!(polygons::Vector{Polygon})

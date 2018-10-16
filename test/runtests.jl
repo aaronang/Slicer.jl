@@ -109,6 +109,9 @@ end
         Polygon([(1, 2, 0), (2, 2, 0), (2, 1, 0), (1, 1, 0)]),
         Polygon([(3, 0, 0), (3, 3, 0), (0, 3, 0), (0, 0, 0)]),
     ]
+
+    @test Slicer.simplify(Polygon([(0, 0, 0), (1, 1, 0), (2, 2, 0), (0, 2, 0)])) ==
+                          Polygon([(2, 2, 0), (0, 2, 0), (0, 0, 0)])
 end
 
 @testset "Clockwise vs. counter-clockwise" begin

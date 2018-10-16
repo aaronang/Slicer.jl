@@ -3,6 +3,7 @@ module Slicer
 using Luxor
 
 include("types.jl")
+include("util.jl")
 include("stl.jl")
 include("intersect.jl")
 include("aabb.jl")
