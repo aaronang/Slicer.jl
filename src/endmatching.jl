@@ -35,8 +35,6 @@ function match(segments::Vector{LineSegment})::Vector{Polygon}
 end
 
 function simplify(polygon::Polygon)::Polygon
-    println(edges(polygon))
-    println(edges(collect(edges(polygon))))
     [b for ((a, b), (c, d)) in edges(collect(edges(polygon))) if !iscollinear(b - a, d - c)]
 end
 
@@ -44,15 +42,16 @@ function iscollinear(a::Vertex, b::Vertex)
     isapprox(norm(cross(a, b)), 0)
 end
 
-function correct!(polygons::Vector{Polygon})
+function correct(polygons::Vector{Polygon})
+    corrected = Vector{Polygon}()
     boxes = map(boundingbox, polygons)
-    for (index, box) in enumerate(boxes)
+    for (i, box) in enumerate(boxes)
         num_enclosing = sum(map(other -> issubset(box, other) ? 1 : 0, boxes))
         if iseven(num_enclosing)
-            isclockwise(polygons[index]) && reverse!(polygons[index])
+            push!(corrected, isclockwise(polygons[i]) ? reverse(polygons[i]) : polygons[i])
         else
-            !isclockwise(polygons[index]) && reverse!(polygons[index])
+            push!(corrected, !isclockwise(polygons[i]) ? reverse(polygons[i]) : polygons[i])
         end
     end
-    nothing
+    corrected
 end
