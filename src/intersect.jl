@@ -28,8 +28,8 @@ function intersect(a::Vertex, b::Vertex, plane::Plane)
         return intersections
     end
 
-    ainplane = isapprox(adistance, 0)
-    binplane = isapprox(bdistance, 0)
+    ainplane = isapprox(adistance, 0, atol=eps(Float32))
+    binplane = isapprox(bdistance, 0, atol=eps(Float32))
 
     if ainplane push!(intersections, a) end
     if binplane push!(intersections, b) end
