@@ -34,12 +34,16 @@ function match(segments::Vector{LineSegment})::Vector{Polygon}
     return polygons
 end
 
-function simplify(polygon::Polygon)::Polygon
+function simplify(polygons::Vector{Polygon})
+    map(simplify, polygons)
+end
+
+function simplify(polygon::Polygon)
     [b for ((a, b), (c, d)) in edges(collect(edges(polygon))) if !iscollinear(b - a, d - c)]
 end
 
 function iscollinear(a::Vertex, b::Vertex)
-    isapprox(norm(cross(a, b)), 0)
+    isapprox(norm(cross(a, b)), 0, atol=1e-2)
 end
 
 function correct(polygons::Vector{Polygon})
