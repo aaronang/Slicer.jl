@@ -19,4 +19,11 @@ function debug(polygons)
     end
 end
 
+function slice(path)
+    triangles = load(path)
+    polylines = intersect(triangles, Plane((0, 0, 1), (0, 0, 1)))
+    polygons = polylines |> match |> simplify |> correct
+    debug(polygons)
+end
+
 end # module
