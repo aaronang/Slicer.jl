@@ -1,28 +1,98 @@
 import DataStructures: DefaultDict, OrderedSet
 import LinearAlgebra: cross, norm
+import RegionTrees: AbstractRefinery, needs_refinement, refine_data, child_boundary, Cell, adaptivesampling!,
+                    HyperRectangle, isleaf, children
+import StaticArrays: SVector
 
-function match(segments::Vector{LineSegment})::Vector{Polygon}
-    cache = DefaultDict{Vertex, Vector{Vertex}}(Vector{Vertex})
-    for segment in segments
-        push!(cache[segment.a], segment.b)
-        push!(cache[segment.b], segment.a)
+struct QuadRefinery <: AbstractRefinery
+    segments::Int32
+    diagonal::Float32
+    vertexedges::DefaultDict{Vertex, Vector{LineSegment}}
+end
+
+"""
+    needs_refinement(r::QuadRefinery, cell::Cell)
+
+Determine whether to divide region into another quad. Stop condition is
+identical to RepRap Host Software's stop condition.
+
+Reference: https://reprap.org/wiki/EndMatching
+"""
+function needs_refinement(r::QuadRefinery, cell::Cell)
+    rectangle = cell.boundary
+    diagonal = sqrt((rectangle.origin[1] + rectangle.widths[1])^2 +
+                    (rectangle.origin[2] + rectangle.widths[2])^2)
+    segments = Set(vcat(map(v -> r.vertexedges[v], cell.data)))
+
+    length(segments) > r.segments && diagonal > r.diagonal
+end
+
+"""
+Check if child cell contains given vertex. The indices indicate where the child
+cell is located in its parent as shown below.
+
+```
+┌────────┬────────┐
+│ (1, 2) │ (2, 2) │
+├────────┼────────┤
+│ (1, 1) │ (2, 1) │
+└────────┴────────┘
+```
+"""
+function contains(cell::Cell, indices, vertex)
+    boundary = child_boundary(cell, indices)
+    xmin = boundary.origin[1]
+    xmax = xmin + boundary.widths[1]
+    ymin = boundary.origin[2]
+    ymax = ymin + boundary.widths[2]
+
+    xcontains = indices[1] == 1 ? xmin <= vertex[1] <= xmax : xmin < vertex[1] <= xmax
+    ycontains = indices[2] == 1 ? ymin <= vertex[2] < ymax : ymin <= vertex[2] <= ymax
+    xcontains && ycontains
+end
+
+function search(cell::Cell, vertex::Vertex)
+    if isleaf(cell)
+        return cell
     end
 
-    polygons = Vector{Polygon}()
+    for indices in [(1, 1), (1, 2), (2, 1), (2, 2)]
+        if contains(cell, indices, vertex)
+            return search(cell[indices...], vertex)
+        end
+    end
+end
 
-    while !isempty(cache)
+function refine_data(r::QuadRefinery, cell::Cell, indices)
+    [vertex for vertex in cell.data if contains(cell, indices, vertex)]
+end
+
+function match(segments::Vector{LineSegment})::Vector{Polygon}
+    vertexedges = DefaultDict{Vertex, Vector{LineSegment}}(Vector{LineSegment})
+    for segment in segments
+        push!(vertexedges[segment.a], segment)
+        push!(vertexedges[segment.b], segment)
+    end
+
+    vertices = collect(keys(cache))
+    aabb = boundingbox(vertices)
+    quadtree = Cell(SVector(aabb.xmin, aabb.ymin), SVector(aabb.xmax, aabb.ymax))
+    refinery = QuadRefinery(2, 1e-5, vertexedges)
+    adaptivesampling!(quadtree, refinery)
+
+    while !isempty(vertexedges)
         polygon = OrderedSet{Vertex}()
-        start = first(cache).first
+        start = first(vertexedges).first
         push!(polygon, start)
-        current = pop!(cache[start])
-        delete!(cache, start)
+        current = pop!(vertexedges[start])
+        delete!(vertexedges, start)
 
-        while haskey(cache, current)
+        while haskey(vertexedges, current)
             push!(polygon, current)
-            a = pop!(cache[current])
-            b = pop!(cache[current])
-            @assert isempty(cache[current])
-            delete!(cache, current)
+            a = pop!(vertexedges[current])
+            b = pop!(vertexedges[current])
+            @assert isempty(vertexedges[current])
+            delete!(vertexedges, current)
             current = in(a, polygon) ? b : a
             push!(polygon, a)
             push!(polygon, b)
