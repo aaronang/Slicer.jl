@@ -21,8 +21,9 @@ end
 
 function slice(path)
     triangles = load(path)
-    polylines = intersect(triangles, Plane((0, 0, 1), (0, 0, 1)))
-    polygons = polylines |> match |> simplify |> correct
+    polylines = intersect(triangles, Plane((0, 0, 1), (0, 0, 3)))
+    polygons = polylines |> match
+    println(polygons)
     debug(polygons)
 end
 

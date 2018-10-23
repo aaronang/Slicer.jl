@@ -1,37 +1,58 @@
 import DataStructures: DefaultDict, OrderedSet
 import LinearAlgebra: cross, norm
 
-function match(segments::Vector{LineSegment})::Vector{Polygon}
-    cache = DefaultDict{Vertex, Vector{Vertex}}(Vector{Vertex})
-    for segment in segments
-        push!(cache[segment.a], segment.b)
-        push!(cache[segment.b], segment.a)
-    end
-
+function match(linesegments::Vector{LineSegment})::Vector{Polygon}
     polygons = Vector{Polygon}()
+    segments = Set(linesegments)
 
-    while !isempty(cache)
-        polygon = OrderedSet{Vertex}()
-        start = first(cache).first
-        push!(polygon, start)
-        current = pop!(cache[start])
-        delete!(cache, start)
+    while !isempty(segments)
+        polygon = Vector{Vertex}()
+        current = pop!(segments)
+        push!(polygon, current.a)
+        push!(polygon, current.b)
+        current = findnearest(current.b, segments)
 
-        while haskey(cache, current)
-            push!(polygon, current)
-            a = pop!(cache[current])
-            b = pop!(cache[current])
-            @assert isempty(cache[current])
-            delete!(cache, current)
-            current = in(a, polygon) ? b : a
-            push!(polygon, a)
-            push!(polygon, b)
+        while current !== nothing
+            delete!(segments, current)
+            tail = last(polygon)
+            adist = distance(tail, current.a)
+            bdist = distance(tail, current.b)
+            if adist < bdist
+                push!(polygon, current.b)
+                current = findnearest(current.b, segments)
+            else
+                push!(polygon, current.a)
+                current = findnearest(current.a, segments)
+            end
         end
 
-        push!(polygons, collect(polygon))
+        pop!(polygon)
+        push!(polygons, polygon)
     end
 
     return polygons
+end
+
+function distance(a::Vertex, b::Vertex)
+    norm(a - b)
+end
+
+function findnearest(vertex::Vertex, segments::Set{LineSegment}, tolerance::Real=1e-3)
+    dist = Inf
+    nearest = nothing
+    for segment in segments
+        d = distance(vertex, segment.a)
+        if d < dist && d < tolerance
+            nearest = segment
+            dist = d
+        end
+        d = distance(vertex, segment.b)
+        if d < dist && d < tolerance
+            nearest = segment
+            dist = d
+        end
+    end
+    nearest
 end
 
 function simplify(polygons::Vector{Polygon})
@@ -43,9 +64,14 @@ function simplify(polygon::Polygon)
 end
 
 function iscollinear(a::Vertex, b::Vertex)
-    isapprox(norm(cross(a, b)), 0, atol=1e-2)
+    isapprox(norm(cross(a, b)), 0, atol=1e-3)
 end
 
+"""
+    correct(polygons::Vector{Polygon})
+
+Correct rotation of polygons. The outer polygon should be counter-clockwise.
+"""
 function correct(polygons::Vector{Polygon})
     corrected = Vector{Polygon}()
     boxes = map(boundingbox, polygons)
